@@ -2,6 +2,8 @@ import numpy as np
 import re
 import itertools
 from collections import Counter
+from baselines import tidy_labels, load_cf_data, plurality
+from ngram import get_labeled_comments
 
 
 def clean_str(string):
@@ -25,7 +27,7 @@ def clean_str(string):
     return string.strip().lower()
 
 
-def load_data_and_labels():
+def load_data_and_labels_rt():
     """
     Loads MR polarity data from files, splits the data into words and generates labels.
     Returns split sentences and labels.
@@ -45,19 +47,50 @@ def load_data_and_labels():
     y = np.concatenate([positive_labels, negative_labels], 0)
     return [x_text, y]
 
+def transform_y(y):
+    if y[0]:
+        return [1,0]
+    else:
+        return [0,1]
 
-def pad_sentences(sentences, padding_word="<PAD/>"):
+def load_data_and_labels_wiki():
+    """
+    Loads MR polarity data from files, splits the data into words and generates labels.
+    Returns split sentences and labels.
+    """
+    # Load data from files
+    d_b = load_cf_data()
+    task = 'recipient'
+    l_b = plurality(d_b[task].dropna())
+    data_b = get_labeled_comments(d_b, l_b)
+    x_text = data_b[['x']].values.tolist()
+    y = data_b[['y']].values.tolist()
+    # Split by words
+    x_text = [sent[0].strip() for sent in x_text]
+    x_text = [clean_str(sent) for sent in x_text]
+    x_text = [s.split(" ") for s in x_text]
+    # Generate labels
+    y = map(transform_y, y)
+    return [x_text, y]
+
+
+def pad_sentences(sentences, max_length = None, padding_word="<PAD/>"):
     """
     Pads all sentences to the same length. The length is defined by the longest sentence.
     Returns padded sentences.
     """
-    sequence_length = max(len(x) for x in sentences)
+    if max_length is None:
+        max_length = max(len(x) for x in sentences)
+    # TODO: have max_length intelligently take the min of itself and the longest sentence
     padded_sentences = []
     for i in range(len(sentences)):
         sentence = sentences[i]
-        num_padding = sequence_length - len(sentence)
-        new_sentence = sentence + [padding_word] * num_padding
-        padded_sentences.append(new_sentence)
+        if (len(sentence) <= max_length):
+            num_padding = max_length - len(sentence)
+            new_sentence = sentence + [padding_word] * num_padding
+            padded_sentences.append(new_sentence)
+        else:
+            padded_sentences.append(sentence[0:max_length])
     return padded_sentences
 
 
@@ -91,8 +124,9 @@ def load_data():
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
     # Load and preprocess data
-    sentences, labels = load_data_and_labels()
-    sentences_padded = pad_sentences(sentences)
+    sentences, labels = load_data_and_labels_wiki()
+    # TODO: don't like hard-coding the max-length here. Make it more obvious somewhere else. Maybe a flag in train.py.
+    sentences_padded = pad_sentences(sentences, max_length = 500)
     vocabulary, vocabulary_inv = build_vocab(sentences_padded)
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
