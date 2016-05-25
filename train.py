@@ -7,6 +7,7 @@ import time
 import datetime
 import data_helpers
 from text_cnn import TextCNN
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 # Parameters
 # ==================================================
@@ -51,7 +52,9 @@ y_shuffled = y[shuffle_indices]
 x_train, x_dev = x_shuffled[:-1000], x_shuffled[-1000:]
 y_train, y_dev = y_shuffled[:-1000], y_shuffled[-1000:]
 print("Vocabulary Size: {:d}".format(len(vocabulary)))
+print("Fraction positive examples: {:d}/{:d}").format( sum(np.argmax(y_shuffled,1)), len(y_shuffled) )
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
+
 
 
 # Training
@@ -96,6 +99,8 @@ with tf.Graph().as_default():
         # Summaries for loss and accuracy
         loss_summary = tf.scalar_summary("loss", cnn.loss)
         acc_summary = tf.scalar_summary("accuracy", cnn.accuracy)
+        # TODO: figure out how to write precision summary
+        #prec_summary = tf.scalar_summary("precision", cnn.precision) and search for acc_summary below
 
         # Train Summaries
         train_summary_op = tf.merge_summary([loss_summary, acc_summary, grad_summaries_merged])
@@ -142,11 +147,16 @@ with tf.Graph().as_default():
               cnn.input_y: y_batch,
               cnn.dropout_keep_prob: 1.0
             }
-            step, summaries, loss, accuracy = sess.run(
-                [global_step, dev_summary_op, cnn.loss, cnn.accuracy],
+            step, summaries, loss, accuracy, scores = sess.run( 
+                [global_step, dev_summary_op, cnn.loss, cnn.accuracy, cnn.scores], 
                 feed_dict)
+            predictions = np.argmax(scores,1)
+            precision = precision_score(np.argmax(y_batch, 1), predictions)
+            recall = recall_score(np.argmax(y_batch, 1), predictions)
+            f1_score = f1_score(np.argmax(y_batch, 1), predictions)
             time_str = datetime.datetime.now().isoformat()
             print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+            print("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1_score))
             if writer:
                 writer.add_summary(summaries, step)
 

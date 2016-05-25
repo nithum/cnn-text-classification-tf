@@ -49,9 +49,9 @@ def load_data_and_labels_rt():
 
 def transform_y(y):
     if y[0]:
-        return [1,0]
-    else:
         return [0,1]
+    else:
+        return [1,0]
 
 def load_data_and_labels_wiki():
     """

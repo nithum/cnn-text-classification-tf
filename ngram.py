@@ -19,3 +19,4 @@ def get_labeled_comments(d, labels):
     np.random.seed(seed=0)
     shuffled_indices = np.random.permutation(np.arange(m))
     return data.iloc[shuffled_indices].dropna()
+
