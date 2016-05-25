@@ -153,10 +153,10 @@ with tf.Graph().as_default():
             predictions = np.argmax(scores,1)
             precision = precision_score(np.argmax(y_batch, 1), predictions)
             recall = recall_score(np.argmax(y_batch, 1), predictions)
-            f1_score = f1_score(np.argmax(y_batch, 1), predictions)
+            f1 = f1_score(np.argmax(y_batch, 1), predictions)
             time_str = datetime.datetime.now().isoformat()
             print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
-            print("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1_score))
+            print("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1))
             if writer:
                 writer.add_summary(summaries, step)
 
