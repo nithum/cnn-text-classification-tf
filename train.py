@@ -111,6 +111,12 @@ with tf.Graph().as_default():
         dev_summary_op = tf.merge_summary([loss_summary, acc_summary])
         dev_summary_dir = os.path.join(out_dir, "summaries", "dev")
         dev_summary_writer = tf.train.SummaryWriter(dev_summary_dir, sess.graph_def)
+        
+        # Metrics summaries
+        metric_summary_dir = os.path.abspath(os.path.join(out_dir, "metrics"))
+        if not os.path.exists(metric_summary_dir):
+            os.makedirs(metric_summary_dir)
+        metric_summary_file = os.path.join(metric_summary_dir, "dev_metrics.txt")
 
         # Checkpoint directory. Tensorflow assumes this directory already exists so we need to create it
         checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
@@ -157,6 +163,8 @@ with tf.Graph().as_default():
             time_str = datetime.datetime.now().isoformat()
             print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
             print("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1))
+            with open(metric_summary_file, 'w') as metric_file:
+                metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1))
             if writer:
                 writer.add_summary(summaries, step)
 
