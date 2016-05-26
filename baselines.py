@@ -152,18 +152,18 @@ def tidy_labels(d):
 def load_cf_data():
     blocked = [
                 'annotated_onion_layer_5_rows_0_to_10000',              #annotated 7 times
-                #'annotated_onion_layer_5_rows_0_to_10000_raters_3',      #annotated 3 times
-                #'annotated_onion_layer_5_rows_0_to_5000_raters_20',     #annotated 20 times
-                #'annotated_onion_layer_5_rows_10000_to_50526_raters_10',#annotated 10 times
-                #'annotated_onion_layer_10_rows_0_to_1000',              #annotated ? times
-                #'annotated_onion_layer_20_rows_0_to_1000',              #annotated ? times
-                #'annotated_onion_layer_30_rows_0_to_1000',              #annotated ? times
+                'annotated_onion_layer_5_rows_0_to_10000_raters_3',      #annotated 3 times
+                'annotated_onion_layer_5_rows_0_to_5000_raters_20',     #annotated 20 times
+                'annotated_onion_layer_5_rows_10000_to_50526_raters_10',#annotated 10 times
+                'annotated_onion_layer_10_rows_0_to_1000',              #annotated 7 times
+                'annotated_onion_layer_20_rows_0_to_1000',              #annotated 7 times
+                'annotated_onion_layer_30_rows_0_to_1000',              #annotated 7 times
     ]
 
-    #random = [
-    #            'annotated_random_data_rows_5000_to_10000',
-    #            'annotated_random_data_rows_0_to_5000_raters_20',
-    #]
+    random = [
+                'annotated_random_data_rows_5000_to_10000',
+                'annotated_random_data_rows_0_to_5000_raters_20',
+    ]
 
     blocked_dfs = []
     for f in blocked:
@@ -173,15 +173,15 @@ def load_cf_data():
         d['src'] = f
         blocked_dfs.append(d)
 
-    #random_dfs = []
-    #for f in random:
-    #    d = pd.read_csv('../../data/v4_annotated/%s.csv' % f)
-    #    d = d.query('_golden == False')
-    #    d.index = d.rev_id
-    #    d['src'] = f
-    #    random_dfs.append(d)
+    random_dfs = []
+    for f in random:
+        d = pd.read_csv('data/v4_annotated/%s.csv' % f)
+        d = d.query('_golden == False')
+        d.index = d.rev_id
+        d['src'] = f
+        random_dfs.append(d)
 
 
-    return tidy_labels(pd.concat(blocked_dfs)) #, tidy_labels(pd.concat(random_dfs))
+    return tidy_labels(pd.concat(blocked_dfs)), tidy_labels(pd.concat(random_dfs))
 
 

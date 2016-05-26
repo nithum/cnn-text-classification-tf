@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 import re
 import itertools
@@ -53,18 +54,15 @@ def transform_y(y):
     else:
         return [1,0]
 
-def load_data_and_labels_wiki():
+def load_data_and_labels_wiki(datfile = 'b_train'):
     """
-    Loads MR polarity data from files, splits the data into words and generates labels.
+    Loads wikipedia data from pre-split files.
+    Splits the data into words and generates labels.
     Returns split sentences and labels.
     """
-    # Load data from files
-    d_b = load_cf_data()
-    task = 'recipient'
-    l_b = plurality(d_b[task].dropna())
-    data_b = get_labeled_comments(d_b, l_b)
-    x_text = data_b[['x']].values.tolist()
-    y = data_b[['y']].values.tolist()
+    data = pd.read_csv('data/%s.csv' % datfile)
+    x_text = data[['x']].values.tolist()
+    y = data[['y']].values.tolist()
     # Split by words
     x_text = [sent[0].strip() for sent in x_text]
     x_text = [clean_str(sent) for sent in x_text]
