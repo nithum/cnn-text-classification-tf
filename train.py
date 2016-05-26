@@ -7,7 +7,7 @@ import time
 import datetime
 import data_helpers
 from text_cnn import TextCNN
-from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
 
 # Parameters
 # ==================================================
@@ -154,18 +154,21 @@ with tf.Graph().as_default():
               cnn.dropout_keep_prob: 1.0
             }
             step, summaries, loss, accuracy, scores = sess.run( 
-                [global_step, dev_summary_op, cnn.loss, cnn.accuracy, cnn.scores], 
+                [global_step, dev_summary_op, cnn.loss, cnn.accuracy, cnn.softmax_scores], 
                 feed_dict)
             predictions = np.argmax(scores,1)
             precision = precision_score(np.argmax(y_batch, 1), predictions)
             recall = recall_score(np.argmax(y_batch, 1), predictions)
             f1 = f1_score(np.argmax(y_batch, 1), predictions)
+            pos_prob = np.array([score[1] for score in scores])
+            y_batch_pos = np.array([y[1] for y in y_batch])
+            roc_auc = roc_auc_score(y_batch_pos, pos_prob) 
             time_str = datetime.datetime.now().isoformat()
             print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
-            print("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1))
+            print("prec {:g}, recall {:g}, f1 {:g}, auc {:g}".format(precision, recall, f1, roc_auc))
             with open(metric_summary_file, 'a') as metric_file:
                 metric_file.write("{}: step {}, loss {:g}, acc {:g} \n".format(time_str, step, loss, accuracy))
-                metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc \n".format(precision, recall, f1))
+                metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc {:g} \n".format(precision, recall, f1, roc_auc))
             if writer:
                 writer.add_summary(summaries, step)
 
