@@ -163,7 +163,8 @@ with tf.Graph().as_default():
             time_str = datetime.datetime.now().isoformat()
             print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
             print("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1))
-            with open(metric_summary_file, 'w') as metric_file:
+            with open(metric_summary_file, 'a') as metric_file:
+                metric_file.write("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
                 metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc ".format(precision, recall, f1))
             if writer:
                 writer.add_summary(summaries, step)
