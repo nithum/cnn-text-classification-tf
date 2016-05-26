@@ -116,13 +116,13 @@ def build_input_data(sentences, labels, vocabulary):
     return [x, y]
 
 
-def load_data():
+def load_data(datfile = 'b_train'):
     """
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
     # Load and preprocess data
-    sentences, labels = load_data_and_labels_wiki()
+    sentences, labels = load_data_and_labels_wiki(datfile)
     # TODO: don't like hard-coding the max-length here. Make it more obvious somewhere else. Maybe a flag in train.py.
     sentences_padded = pad_sentences(sentences, max_length = 500)
     vocabulary, vocabulary_inv = build_vocab(sentences_padded)
