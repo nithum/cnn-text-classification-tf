@@ -8,6 +8,7 @@ import datetime
 import data_helpers
 from text_cnn import TextCNN
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.cross_validation import train_test_split
 
 # Parameters
 # ==================================================
@@ -42,17 +43,13 @@ print("")
 # Load data
 print("Loading data...")
 x, y, vocabulary, vocabulary_inv = data_helpers.load_data()
-# Randomly shuffle data
-np.random.seed(10)
-shuffle_indices = np.random.permutation(np.arange(len(y)))
-x_shuffled = x[shuffle_indices]
-y_shuffled = y[shuffle_indices]
+
 # Split train/test set
 # TODO: This is very crude, should use cross-validation
-x_train, x_dev = x_shuffled[:-1000], x_shuffled[-1000:]
-y_train, y_dev = y_shuffled[:-1000], y_shuffled[-1000:]
+x_train, x_dev = train_test_split(x, test_size = 0.2, random_state=0)
+y_train, y_dev = train_test_split(y, test_size = 0.2, random_state=0)
 print("Vocabulary Size: {:d}".format(len(vocabulary)))
-print("Fraction positive examples: {:d}/{:d}").format( sum(np.argmax(y_shuffled,1)), len(y_shuffled) )
+print("Fraction positive examples (train): {:d}/{:d}").format( sum(np.argmax(y_train,1)), len(y_train) )
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 
 
