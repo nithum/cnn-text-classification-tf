@@ -54,7 +54,7 @@ def transform_y(y):
     else:
         return [1,0]
 
-def load_data_and_labels_wiki(datfile = 'b_train'):
+def load_data_and_labels_wiki(datfile):
     """
     Loads wikipedia data from pre-split files.
     Splits the data into words and generates labels.

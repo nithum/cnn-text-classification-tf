@@ -59,43 +59,49 @@ with graph.as_default():
         dropout_keep_prob = graph.get_operation_by_name("dropout_keep_prob").outputs[0]
 
         # Tensors we want to evaluate
+        predictions = graph.get_operation_by_name("output/predictions").outputs[0]
         softmax_scores = graph.get_operation_by_name("output/softmax_scores").outputs[0]
 
         # Generate batches for one epoch
-        batches = data_helpers.batch_iter(x_test, FLAGS.batch_size, 1, shuffle=False)
+        #batches = data_helpers.batch_iter(x_test, FLAGS.batch_size, 1, shuffle=False)
 
         # Collect the predictions here
-        all_scores = np.array([])
+        #all_scores = []
+        #all_predictions = []
 
-        for x_test_batch in batches:
-            batch_scores = sess.run(softmax_scores, {input_x: x_test_batch, dropout_keep_prob: 1.0})
-            print batch_scores[0]
-            batch_scores_pos = [score[1] for score in batch_scores]
-            all_scores = np.concatenate([all_scores, batch_scores_pos])
-"""
+        #for x_test_batch in batches:
+        predictions, scores = sess.run([predictions, softmax_scores], {input_x: x_test, dropout_keep_prob: 1.0})
+        #print batch_scores[0]
+        #batch_scores_pos = [score[1] for score in batch_scores]
+        #all_scores = np.concatenate([all_scores, batch_scores_pos])
+        #all_predictions = np.concatenate([all_predictions, batch_predictions])
+
 # Print accuracy
-predictions = [score >= 0.5 for score in all_scores]
+my_predictions = np.argmax(scores, axis = 1)
+my_correct_predictions = float(sum(my_predictions == np.array(y_test)))
+my_accuracy = my_correct_predictions/float(len(y_test))
 correct_predictions = float(sum(predictions == y_test))
-accuracy = correct_predictions/float(len(y_test))
 print("Total number of test examples: {}".format(len(y_test)))
-print("Accuracy: {:g}".format(accuracy))
+print("Accuracy: {:g}".format(correct_predictions/float(len(y_test))))
+print("My Accuracy: {:g}".format(my_accuracy))
 
 # Set/create directories
 # Metrics summaries
-metric_summary_dir = os.path.abspath(os.path.join(FLAGS.checkpoint_dir, "eval"))
-if not os.path.exists(metric_summary_dir):
-    os.makedirs(metric_summary_dir)
-metric_summary_file = os.path.join(metric_summary_dir, FLAGS.eval_filename + "_metrics.txt")
+#metric_summary_dir = os.path.abspath(os.path.join(FLAGS.checkpoint_dir, "eval"))
+#if not os.path.exists(metric_summary_dir):
+#    os.makedirs(metric_summary_dir)
+#metric_summary_file = os.path.join(metric_summary_dir, FLAGS.eval_filename + "_metrics.txt")
 
 
 # Print other metrics
-
-precision = precision_score(y_test, predictions)
-recall = recall_score(y_test, predictions)
-f1 = f1_score(y_test, predictions)
-roc_auc = roc_auc_score(y_test, all_scores) 
+#y_test = np.array(y_test)
+precision = precision_score(y_test, my_predictions)
+recall = recall_score(y_test, my_predictions)
+f1 = f1_score(y_test, my_predictions)
+roc_auc = roc_auc_score(y_test, np.array([score[1] for score in scores])) 
 time_str = datetime.datetime.now().isoformat()
 print("prec {:g}, recall {:g}, f1 {:g}, auc {:g}".format(precision, recall, f1, roc_auc))
+"""
 with open(metric_summary_file, 'w') as metric_file:
     metric_file.write("Accuracy: {:g} \n".format(accuracy))
     metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc {:g} \n".format(precision, recall, f1, roc_auc))

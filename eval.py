@@ -96,5 +96,5 @@ roc_auc = roc_auc_score(y_test, all_scores)
 time_str = datetime.datetime.now().isoformat()
 print("prec {:g}, recall {:g}, f1 {:g}, auc {:g}".format(precision, recall, f1, roc_auc))
 with open(metric_summary_file, 'w') as metric_file:
-    metric_file.write("Accuracy: {:g}".format(accuracy))
+    metric_file.write("Accuracy: {:g} \n".format(accuracy))
     metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc {:g} \n".format(precision, recall, f1, roc_auc))
