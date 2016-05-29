@@ -30,7 +30,7 @@ tf.flags.DEFINE_integer("checkpoint_every", 100, "Save model after this many ste
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
 #tf.flags.DEFINE_float("max_length", 500, "Maximum length of a sentence (Default: 500)")
-
+tf.flags.DEFINE_string("training_file", "b_train", "Name of the training data file (default: b_train)")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -45,7 +45,7 @@ print("")
 
 # Load data
 print("Loading data...")
-x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data()
+x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data(datfile = FLAGS.training_file)
 
 # Split train/test set
 # TODO: This is very crude, should use cross-validation
