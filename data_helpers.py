@@ -134,6 +134,7 @@ def load_training_data(datfile = 'b_train', max_length = 500):
     sentences, labels = load_data_and_labels_wiki(datfile)
     sentences_padded = pad_sentences(sentences, max_length = max_length)
     vocabulary, vocabulary_inv = build_vocab(sentences_padded)
+    # TODO: Should test for directory existence and create directory if not
     cPickle.dump([vocabulary, vocabulary_inv], open('vocabulary/wiki.p', 'w'))
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
@@ -147,6 +148,7 @@ def load_eval_data(datfile = 'b_test'):
     sentences, labels = load_data_and_labels_wiki(datfile)
     vocabs = cPickle.load(open('vocabulary/wiki.p', 'rb'))
     vocabulary, vocabulary_inv = vocabs[0], vocabs[1]
+    # TODO: Is there a more intelligent way than just deleting words not in vocab?
     sentences = filter_by_vocab(sentences, vocabulary)
     # TODO: Should pickle and load the max_length as well!!
     sentences_padded = pad_sentences(sentences, max_length = 500)

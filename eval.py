@@ -8,6 +8,7 @@ import datetime
 import data_helpers
 from text_cnn import TextCNN
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
+from ngram import get_binary_classifier_metrics
 
 # Parameters
 # ==================================================
@@ -32,8 +33,7 @@ print("")
 
 # Load data. Load your own data here
 print("Loading data...")
-## TODO: !?!?!?! This is incorrect. We need to store the vocabulary and read that back instead of
-## creating an ENTIRELY NEW ONE!
+
 x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data(datfile = FLAGS.eval_filename)
 y_test = np.argmax(y_test, axis=1)
 print("Vocabulary size: {:d}".format(len(vocabulary)))
@@ -78,8 +78,18 @@ with graph.as_default():
 predictions = [score >= 0.5 for score in all_scores]
 correct_predictions = float(sum(predictions == y_test))
 accuracy = correct_predictions/float(len(y_test))
+print("@ threshold = 0.5")
 print("Total number of test examples: {}".format(len(y_test)))
 print("Accuracy: {:g}".format(accuracy))
+precision = precision_score(y_test, predictions)
+recall = recall_score(y_test, predictions)
+f1 = f1_score(y_test, predictions)
+roc_auc = roc_auc_score(y_test, all_scores) 
+time_str = datetime.datetime.now().isoformat()
+print("prec {:g}, recall {:g}, f1 {:g}, auc {:g}".format(precision, recall, f1, roc_auc))
+print (" ")
+print('@ optimal F1 threshold')
+threshold, scores = get_binary_classifier_metrics(all_scores, y_test)
 
 # Set/create directories
 # Metrics summaries
@@ -90,13 +100,13 @@ metric_summary_file = os.path.join(metric_summary_dir, FLAGS.eval_filename + "_m
 
 
 # Print other metrics
-
-precision = precision_score(y_test, predictions)
-recall = recall_score(y_test, predictions)
-f1 = f1_score(y_test, predictions)
-roc_auc = roc_auc_score(y_test, all_scores) 
-time_str = datetime.datetime.now().isoformat()
-print("prec {:g}, recall {:g}, f1 {:g}, auc {:g}".format(precision, recall, f1, roc_auc))
+# TODO: Optimal F1 score
 with open(metric_summary_file, 'w') as metric_file:
     metric_file.write("Accuracy: {:g} \n".format(accuracy))
+    metric_file.write("@ threshold = 0.5 \n")
     metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc {:g} \n".format(precision, recall, f1, roc_auc))
+    metric_file.write("@ optimal f1 threshold: {:g} \n".format(threshold))
+    metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc {:g} \n".format(scores['precision @ optimal F1'], 
+                                                                    scores['recall @ optimal F1'], scores['optimal F1'],
+                                                                    scores['roc']))
+
