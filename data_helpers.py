@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 import itertools
+import cPickle
 from collections import Counter
 from baselines import tidy_labels, load_cf_data, plurality
 from ngram import get_labeled_comments
@@ -106,6 +107,14 @@ def build_vocab(sentences):
     vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
     return [vocabulary, vocabulary_inv]
 
+def filter_by_vocab(sentences, vocabulary):
+	filtered_sentences = []
+	for sentence in sentences:
+		new_sentence = [word for word in sentence if word in vocabulary]
+		filtered_sentences.append(new_sentence)
+		# Should print count of number of words removed
+	return filtered_sentences
+
 
 def build_input_data(sentences, labels, vocabulary):
     """
@@ -116,16 +125,31 @@ def build_input_data(sentences, labels, vocabulary):
     return [x, y]
 
 
-def load_data(datfile = 'b_train'):
+def load_training_data(datfile = 'b_train', max_length = 500):
     """
-    Loads and preprocessed data for the MR dataset.
+    Loads and preprocessed data for training on the wikipedia dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
     # Load and preprocess data
     sentences, labels = load_data_and_labels_wiki(datfile)
-    # TODO: don't like hard-coding the max-length here. Make it more obvious somewhere else. Maybe a flag in train.py.
-    sentences_padded = pad_sentences(sentences, max_length = 500)
+    sentences_padded = pad_sentences(sentences, max_length = max_length)
     vocabulary, vocabulary_inv = build_vocab(sentences_padded)
+    cPickle.dump([vocabulary, vocabulary_inv], open('vocabulary/wiki.p', 'w'))
+    x, y = build_input_data(sentences_padded, labels, vocabulary)
+    return [x, y, vocabulary, vocabulary_inv]
+
+def load_eval_data(datfile = 'b_test'):
+    """
+    Loads and preprocessed data for evaluating on the wikipedia dataset.
+    Returns input vectors, labels, vocabulary, and inverse vocabulary.
+    """
+    # Load and preprocess data
+    sentences, labels = load_data_and_labels_wiki(datfile)
+    vocabs = cPickle.load(open('vocabulary/wiki.p', 'rb'))
+    vocabulary, vocabulary_inv = vocabs[0], vocabs[1]
+    sentences = filter_by_vocab(sentences, vocabulary)
+    # TODO: Should pickle and load the max_length as well!!
+    sentences_padded = pad_sentences(sentences, max_length = 500)
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
 

@@ -32,7 +32,9 @@ print("")
 
 # Load data. Load your own data here
 print("Loading data...")
-x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_data(datfile = FLAGS.eval_filename)
+## TODO: !?!?!?! This is incorrect. We need to store the vocabulary and read that back instead of
+## creating an ENTIRELY NEW ONE!
+x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data(datfile = FLAGS.eval_filename)
 y_test = np.argmax(y_test, axis=1)
 print("Vocabulary size: {:d}".format(len(vocabulary)))
 print("Test set size {:d}".format(len(y_test)))

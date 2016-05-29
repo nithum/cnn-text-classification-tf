@@ -25,9 +25,12 @@ tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_integer("num_epochs", 200, "Number of training epochs (default: 200)")
 tf.flags.DEFINE_integer("evaluate_every", 100, "Evaluate model on dev set after this many steps (default: 100)")
 tf.flags.DEFINE_integer("checkpoint_every", 100, "Save model after this many steps (default: 100)")
+
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
+#tf.flags.DEFINE_float("max_length", 500, "Maximum length of a sentence (Default: 500)")
+
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -42,7 +45,7 @@ print("")
 
 # Load data
 print("Loading data...")
-x, y, vocabulary, vocabulary_inv = data_helpers.load_data()
+x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data()
 
 # Split train/test set
 # TODO: This is very crude, should use cross-validation
