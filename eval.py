@@ -17,7 +17,7 @@ from ngram import get_binary_classifier_metrics
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_string("checkpoint_dir", "", "Checkpoint directory from training run")
 tf.flags.DEFINE_string("eval_filename", "b_test", "Name of file to run eval on: usually one of [b_test, r_test, br_test]")
-
+tf.flags.DEFINE_string("checkpoint_num", None, "Number of the checkpoint to use")
 
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
@@ -43,7 +43,10 @@ print("\nEvaluating...\n")
 
 # Evaluation
 # ==================================================
-checkpoint_file = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
+if FLAGS.checkpoint_num is None:
+    checkpoint_file = tf.train.latest_checkpoint(FLAGS.checkpoint_dir)
+else:
+    checkpoint_file = os.path.join(FLAGS.checkpoint_dir, 'model-' + FLAGS.checkpoint_num)
 graph = tf.Graph()
 with graph.as_default():
     session_conf = tf.ConfigProto(

@@ -48,9 +48,8 @@ print("Loading data...")
 x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data(datfile = FLAGS.training_file)
 
 # Split train/test set
-# TODO: This is very crude, should use cross-validation
-x_train, x_dev = train_test_split(x, test_size = 0.2, random_state=0)
-y_train, y_dev = train_test_split(y, test_size = 0.2, random_state=0)
+x_train, x_dev = train_test_split(x, test_size = 0.1, random_state=0)
+y_train, y_dev = train_test_split(y, test_size = 0.1, random_state=0)
 print("Vocabulary Size: {:d}".format(len(vocabulary)))
 print("Fraction positive examples (train): {:d}/{:d}").format( sum(np.argmax(y_train,1)), len(y_train) )
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
