@@ -24,7 +24,7 @@ tf.flags.DEFINE_float("l2_reg_lambda", 0.0, "L2 regularizaion lambda (default: 0
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_integer("num_epochs", 200, "Number of training epochs (default: 200)")
 tf.flags.DEFINE_integer("evaluate_every", 100, "Evaluate model on dev set after this many steps (default: 100)")
-tf.flags.DEFINE_integer("checkpoint_every", 100, "Save model after this many steps (default: 100)")
+#tf.flags.DEFINE_integer("checkpoint_every", 100, "Save model after this many steps (default: 100)")
 
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
@@ -54,6 +54,8 @@ print("Vocabulary Size: {:d}".format(len(vocabulary)))
 print("Fraction positive examples (train): {:d}/{:d}").format( sum(np.argmax(y_train,1)), len(y_train) )
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 
+# Keep track of best auc to save best model
+best_auc = 0
 
 
 # Training
@@ -161,7 +163,8 @@ with tf.Graph().as_default():
             f1 = f1_score(np.argmax(y_batch, 1), predictions)
             pos_prob = np.array([score[1] for score in scores])
             y_batch_pos = np.array([y[1] for y in y_batch])
-            roc_auc = roc_auc_score(y_batch_pos, pos_prob) 
+            roc_auc = roc_auc_score(y_batch_pos, pos_prob)
+
             time_str = datetime.datetime.now().isoformat()
             print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
             print("prec {:g}, recall {:g}, f1 {:g}, auc {:g}".format(precision, recall, f1, roc_auc))
@@ -170,6 +173,10 @@ with tf.Graph().as_default():
                 metric_file.write("prec {:g}, recall {:g}, f1 {:g}, auc {:g} \n".format(precision, recall, f1, roc_auc))
             if writer:
                 writer.add_summary(summaries, step)
+
+            return roc_auc
+            
+            
 
         # Generate batches
         batches = data_helpers.batch_iter(
@@ -181,8 +188,13 @@ with tf.Graph().as_default():
             current_step = tf.train.global_step(sess, global_step)
             if current_step % FLAGS.evaluate_every == 0:
                 print("\nEvaluation:")
-                dev_step(x_dev, y_dev, writer=dev_summary_writer)
+                roc_auc = dev_step(x_dev, y_dev, writer=dev_summary_writer)
                 print("")
-            if current_step % FLAGS.checkpoint_every == 0:
-                path = saver.save(sess, checkpoint_prefix, global_step=current_step)
-                print("Saved model checkpoint to {}\n".format(path))
+                # Note: Only saves models that improve best AUC!
+                if roc_auc > best_auc:
+                    best_auc = roc_auc
+                    path = saver.save(sess, checkpoint_prefix, global_step=current_step)
+                    print("Saved model checkpoint to {}\n".format(path))
+            #if current_step % FLAGS.checkpoint_every == 0:
+            #    path = saver.save(sess, checkpoint_prefix, global_step=current_step)
+            #    print("Saved model checkpoint to {}\n".format(path))
