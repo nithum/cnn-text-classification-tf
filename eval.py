@@ -18,6 +18,7 @@ tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_string("checkpoint_dir", "", "Checkpoint directory from training run")
 tf.flags.DEFINE_string("eval_filename", "b_test", "Name of file to run eval on: usually one of [b_test, r_test, br_test]")
 tf.flags.DEFINE_string("checkpoint_num", None, "Number of the checkpoint to use")
+tf.flags.DEFINE_boolean("char_cnn", False, "Train on the character level instead of word level (default: False)")
 
 # Misc Parameters
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
@@ -34,7 +35,10 @@ print("")
 # Load data. Load your own data here
 print("Loading data...")
 
-x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data(datfile = FLAGS.eval_filename)
+if FLAGS.char_cnn:
+    x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data_char(datfile = FLAGS.eval_filename)
+else:
+    x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data(datfile = FLAGS.eval_filename)
 y_test = np.argmax(y_test, axis=1)
 print("Vocabulary size: {:d}".format(len(vocabulary)))
 print("Test set size {:d}".format(len(y_test)))

@@ -55,6 +55,24 @@ def transform_y(y):
     else:
         return [1,0]
 
+def load_data_and_labels_wiki_char(datfile):
+    """
+    Loads wikipedia data from pre-split files.
+    Splits the data into words and generates labels.
+    Returns split sentences and labels.
+    """
+    data = pd.read_csv('data/%s.csv' % datfile)
+    x_text = data[['x']].values.tolist()
+    y = data[['y']].values.tolist()
+    # Split by words
+    x_text = [sent[0].strip() for sent in x_text]
+    #x_text = [clean_str(sent) for sent in x_text]
+    #x_text = [s.split(" ") for s in x_text]
+    x_text = [list(s) for s in x_text]
+    # Generate labels
+    y = map(transform_y, y)
+    return [x_text, y]
+
 def load_data_and_labels_wiki(datfile):
     """
     Loads wikipedia data from pre-split files.
@@ -139,6 +157,20 @@ def load_training_data(datfile = 'b_train', max_length = 500):
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
 
+def load_training_data_char(datfile = 'b_train', max_length = 2000):
+    """
+    Loads and preprocessed data for training on the wikipedia dataset.
+    Returns input vectors, labels, vocabulary, and inverse vocabulary.
+    """
+    # Load and preprocess data
+    sentences, labels = load_data_and_labels_wiki_char(datfile)
+    sentences_padded = pad_sentences(sentences, max_length = max_length)
+    vocabulary, vocabulary_inv = build_vocab(sentences_padded)
+    # TODO: Should test for directory existence and create directory if not
+    cPickle.dump([vocabulary, vocabulary_inv], open('vocabulary/wiki_char.p', 'wb'))
+    x, y = build_input_data(sentences_padded, labels, vocabulary)
+    return [x, y, vocabulary, vocabulary_inv]
+
 def load_eval_data(datfile = 'b_test'):
     """
     Loads and preprocessed data for evaluating on the wikipedia dataset.
@@ -152,6 +184,22 @@ def load_eval_data(datfile = 'b_test'):
     sentences = filter_by_vocab(sentences, vocabulary)
     # TODO: Should pickle and load the max_length as well!!
     sentences_padded = pad_sentences(sentences, max_length = 500)
+    x, y = build_input_data(sentences_padded, labels, vocabulary)
+    return [x, y, vocabulary, vocabulary_inv]
+
+def load_eval_data_char(datfile = 'b_test'):
+    """
+    Loads and preprocessed data for evaluating on the wikipedia dataset.
+    Returns input vectors, labels, vocabulary, and inverse vocabulary.
+    """
+    # Load and preprocess data
+    sentences, labels = load_data_and_labels_wiki(datfile)
+    vocabs = cPickle.load(open('vocabulary/wiki_char.p', 'rb'))
+    vocabulary, vocabulary_inv = vocabs[0], vocabs[1]
+    # TODO: Is there a more intelligent way than just deleting words not in vocab?
+    sentences = filter_by_vocab(sentences, vocabulary)
+    # TODO: Should pickle and load the max_length as well!!
+    sentences_padded = pad_sentences(sentences, max_length = 2000)
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
 

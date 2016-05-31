@@ -7,6 +7,7 @@ import os
 import time
 import datetime
 import data_helpers
+import cPickle
 from text_cnn import TextCNN
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
 from ngram import get_binary_classifier_metrics
