@@ -142,7 +142,6 @@ def build_input_data(sentences, labels, vocabulary):
     y = np.array(labels)
     return [x, y]
 
-
 def load_training_data(datfile = 'b_train', max_length = 500):
     """
     Loads and preprocessed data for training on the wikipedia dataset.
@@ -157,7 +156,7 @@ def load_training_data(datfile = 'b_train', max_length = 500):
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
 
-def load_training_data_char(datfile = 'b_train', max_length = 2000):
+def load_training_data_char(datfile = 'b_train', max_length = 500):
     """
     Loads and preprocessed data for training on the wikipedia dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
@@ -199,9 +198,11 @@ def load_eval_data_char(datfile = 'b_test'):
     # TODO: Is there a more intelligent way than just deleting words not in vocab?
     sentences = filter_by_vocab(sentences, vocabulary)
     # TODO: Should pickle and load the max_length as well!!
-    sentences_padded = pad_sentences(sentences, max_length = 2000)
+    sentences_padded = pad_sentences(sentences, max_length = 500)
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
+
+# TODO: combine the char and non-char functions intelligently
 
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):
@@ -222,3 +223,76 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
             start_index = batch_num * batch_size
             end_index = min((batch_num + 1) * batch_size, data_size)
             yield shuffled_data[start_index:end_index]
+
+
+def load_bin_vec(fname, vocab):
+    """
+    Loads 300x1 word vecs from Google (Mikolov) word2vec
+    """
+    word_vecs = {}
+    with open(fname, "rb") as f:
+        header = f.readline()
+        vocab_size, layer1_size = map(int, header.split())
+        binary_len = np.dtype('float32').itemsize * layer1_size
+        for line in xrange(vocab_size):
+            word = []
+            while True:
+                ch = f.read(1)
+                if ch == ' ':
+                    word = ''.join(word)
+                    break
+                if ch != '\n':
+                    word.append(ch)   
+            if word in vocab:
+               word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')  
+            else:
+                f.read(binary_len)
+    return word_vecs
+
+def add_unknown_words(word_vecs, vocab, k=300):
+    """
+    Create a separate word vector for unknown words    
+    0.25 is chosen so the unknown vectors have (approximately) same variance as pre-trained ones
+    """
+    for word in vocab:
+        if word not in word_vecs:
+            word_vecs[word] = np.random.uniform(-0.25,0.25,k)  
+
+def get_W(word_vecs, k=300):
+    """
+    Get word matrix. W[i] is the vector for word indexed by i
+    """
+    vocab_size = len(word_vecs)
+    word_idx_map = dict()
+    W = np.zeros(shape=(vocab_size, k), dtype='float32')            
+    i = 0
+    # TODO: Use enumerate instead
+    for word in word_vecs:
+        W[i] = word_vecs[word]
+        word_idx_map[word] = i
+        i += 1
+    return W, word_idx_map
+
+def load_training_data_word2vec(datfile = 'b_train', max_length = 500):
+    """
+    Loads and preprocessed data for training on the wikipedia dataset.
+    Returns input vectors, labels, vocabulary, and inverse vocabulary.
+    """
+    # Load and preprocess data
+    sentences, labels = load_data_and_labels_wiki(datfile)
+    sentences_padded = pad_sentences(sentences, max_length = max_length)
+    vocabulary, vocabulary_inv = build_vocab(sentences_padded)
+    w2v_file = 'word2vec/GoogleNews-vectors-negative300.bin' 
+    w2v = load_bin_vec(w2v_file, vocabulary)
+    print "num words already in word2vec: " + str(len(w2v))
+    add_unknown_words(w2v, vocabulary)
+    W, vocabulary = get_W(w2v)
+    # word_idx_map is the new vocabulary. Could make a new vocabulary_inv ??
+
+    # TODO: Should test for directory existence and create directory if not
+    cPickle.dump([vocabulary, vocabulary_inv], open('vocabulary/wiki.p', 'wb'))
+    print W.shape
+    x, y = build_input_data(sentences_padded, labels, vocabulary)
+    return [x, y, vocabulary, W] # NOTE: In this case, vocabulary_inv is wrong
+
+      

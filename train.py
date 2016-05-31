@@ -15,7 +15,8 @@ from sklearn.cross_validation import train_test_split
 # ==================================================
 
 # Model Hyperparameters
-tf.flags.DEFINE_integer("embedding_dim", 200, "Dimensionality of character embedding (default: 200)")
+# TODO: If word2vec flag True then overwrite embedding_dim -- then clean this up somehow
+tf.flags.DEFINE_integer("embedding_dim", 300, "Dimensionality of character embedding (default: 200)")
 tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
 tf.flags.DEFINE_integer("num_filters", 128, "Number of filters per filter size (default: 128)")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
@@ -32,7 +33,8 @@ tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device 
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
 #tf.flags.DEFINE_float("max_length", 500, "Maximum length of a sentence (Default: 500)")
 tf.flags.DEFINE_string("training_file", "b_train", "Name of the training data file (default: b_train)")
-tf.flags.DEFINE_boolean("char_cnn", False, "Train on the character level instead of word level (default: False)")
+tf.flags.DEFINE_boolean("char_cnn", False, "Train on the character level instead of word level? (default: False)")
+tf.flags.DEFINE_boolean("word2vec", False, "Use a pre-trained word2vec embedding? (default: False)")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -49,6 +51,8 @@ print("")
 print("Loading data...")
 if FLAGS.char_cnn:
     x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data_char(datfile = FLAGS.training_file)
+elif FLAGS.word2vec:
+    x, y, vocabulary, W2V = data_helpers.load_training_data_word2vec(datfile = FLAGS.training_file)
 else:
     x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data(datfile = FLAGS.training_file)    
 
@@ -137,6 +141,9 @@ with tf.Graph().as_default():
 
         # Initialize all variables
         sess.run(tf.initialize_all_variables())
+        if FLAGS.word2vec:
+            print 'Trying to assign word2vec vector...'
+            sess.run(cnn.W.assign(W2V))
 
         def train_step(x_batch, y_batch):
             """

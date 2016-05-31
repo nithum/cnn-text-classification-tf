@@ -36,6 +36,7 @@ print("")
 print("Loading data...")
 
 if FLAGS.char_cnn:
+    # BUG: This branch does not work. Tries to access an index way higher than the vocabulary size. What is going on here?
     x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data_char(datfile = FLAGS.eval_filename)
 else:
     x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data(datfile = FLAGS.eval_filename)
