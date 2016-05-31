@@ -51,8 +51,9 @@ x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data(datfile = FLA
 # Split train/test set
 x_train, x_dev = train_test_split(x, test_size = 0.1, random_state=0)
 y_train, y_dev = train_test_split(y, test_size = 0.1, random_state=0)
-x_dev.to_csv('data/x_dev.csv')
-y_dev.to_csv('data/y_dev.csv')
+# TODO: Remove these
+np.save('data/x_dev.npy', x_dev)
+np.save('data/y_dev.npy', y_dev)
 
 print("Vocabulary Size: {:d}".format(len(vocabulary)))
 print("Fraction positive examples (train): {:d}/{:d}").format( sum(np.argmax(y_train,1)), len(y_train) )

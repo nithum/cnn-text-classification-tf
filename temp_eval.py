@@ -35,8 +35,8 @@ print("")
 # Load data. Load your own data here
 print("Loading data...")
 
-x_test = pd.read_csv('data/x_dev.csv')
-y_test = pd.read_csv('data/y_dev.csv')
+x_test = np.load('data/x_dev.npy')
+y_test = np.load('data/y_dev.npy')
 vocabs = cPickle.load(open('vocabulary/wiki.p', 'rb'))
 vocabulary, vocabulary_inv = vocabs[0], vocabs[1]
 #x_test, y_test, vocabulary, vocabulary_inv = data_helpers.load_eval_data(datfile = FLAGS.eval_filename)
