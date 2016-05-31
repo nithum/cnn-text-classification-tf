@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import tensorflow as tf
+import pandas as pd
 import numpy as np
 import os
 import time
@@ -50,6 +51,9 @@ x, y, vocabulary, vocabulary_inv = data_helpers.load_training_data(datfile = FLA
 # Split train/test set
 x_train, x_dev = train_test_split(x, test_size = 0.1, random_state=0)
 y_train, y_dev = train_test_split(y, test_size = 0.1, random_state=0)
+x_dev.to_csv('data/x_dev.csv')
+y_dev.to_csv('data/y_dev.csv')
+
 print("Vocabulary Size: {:d}".format(len(vocabulary)))
 print("Fraction positive examples (train): {:d}/{:d}").format( sum(np.argmax(y_train,1)), len(y_train) )
 print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))

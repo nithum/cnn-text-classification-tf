@@ -135,7 +135,7 @@ def load_training_data(datfile = 'b_train', max_length = 500):
     sentences_padded = pad_sentences(sentences, max_length = max_length)
     vocabulary, vocabulary_inv = build_vocab(sentences_padded)
     # TODO: Should test for directory existence and create directory if not
-    cPickle.dump([vocabulary, vocabulary_inv], open('vocabulary/wiki.p', 'w'))
+    cPickle.dump([vocabulary, vocabulary_inv], open('vocabulary/wiki.p', 'wb'))
     x, y = build_input_data(sentences_padded, labels, vocabulary)
     return [x, y, vocabulary, vocabulary_inv]
 
